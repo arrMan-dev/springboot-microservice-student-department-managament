@@ -1,0 +1,64 @@
+server:
+  port: 3333
+spring:
+  application:
+    name: API-GATEWAY
+  cloud:
+    gateway:
+      routes:
+        - id: STUDENT-MS
+          uri: lb://STUDENT-MS
+          predicates:
+            - Path=/api/student/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: STUDENT-MS
+                fallbackuri: forward:/studentFallback
+        - id: DEPARTMENT-MS
+          uri: lb://DEPARTMENT-MS
+          predicates:
+            - Path=/api/department/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: DEPARTMENT-MS
+                fallbackuri: forward:/departmentFallback
+  main:
+    web-application-type: reactive
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfcallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 2s
+        failureRateThreshold: 5
+        eventConsumerBufferSize: 10
+    instances:
+      STUDENT-MS:
+        baseConfig: default
+      DEPARTMENT-MS:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfcallsInHalfOpenState: 3
+        waitDurationInOpenState: 1s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+  timelimiter:
+    time-limiter-aspect-order: 398
+    configs:
+      default:
+        timeOutDuration: 1s
+        cancelRunningFuture: false
+    instances:
+      STUDENT-MS:
+        timeOutDuration: 2s
+      DEPARTMENT-MS:
+        timeOutDuration: 2s
+
+
+
