@@ -1,0 +1,9 @@
+server:
+  port: 2222
+
+spring:
+  application:
+    name: DEPARTMENT-MS
+  zipkin:
+    baseUurl: http://127.0.0.1:9411/
+
